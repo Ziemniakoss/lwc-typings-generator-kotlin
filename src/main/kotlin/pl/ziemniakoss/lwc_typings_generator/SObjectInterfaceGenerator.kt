@@ -5,10 +5,17 @@ import pl.ziemniakoss.lwc_typings_generator.metadata_types.Field
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.FieldType
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
 import java.io.BufferedWriter
+import java.nio.file.Paths
+import kotlin.io.path.bufferedWriter
+import kotlin.io.path.createDirectories
 
 class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
-	override fun generateInterface(sObject: SObject, output: BufferedWriter, generateReferencesForSObjects: Set<String>) {
-		generateReferencedSObjectsImports(sObject, output, generateReferencesForSObjects)
+	init {
+		Paths.get(".sfdx", "typings", "lwc", "sobjects").createDirectories()
+	}
+
+	override fun generateInterface(sObject: SObject) {
+		val output = Paths.get(".sfdx", "typings", "lwc", "sobjects", "${sObject.name}.d.ts").bufferedWriter()
 		generatePicklistTypes(sObject, output)
 		output.apply {
 			write("declare interface ")
@@ -21,43 +28,8 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 		output.apply {
 			write("}")
 			newLine()
-
-			write("export {")
-			write(sObject.name)
-			write("}")
-			newLine()
 		}
-	}
-
-
-	private fun generateReferencedSObjectsImports(sObject: SObject, output: BufferedWriter, generateRefereesFor: Set<String>) {
-		val allReferencedSObjects = mutableSetOf<String>()
-		val referenceFields = sObject.fields.filter { it.type == FieldType.reference}
-		for(field in referenceFields) {
-			for(referencedSObject in field.referenceTo!!) {
-				if (referencedSObject != sObject.name) {
-					allReferencedSObjects.add(referencedSObject)
-				}
-			}
-		}
-		for(childRelationship in sObject.childRelationships) {
-			if(childRelationship.childSObject != sObject.name) {
-				allReferencedSObjects.add(childRelationship.childSObject)
-			}
-		}
-		allReferencedSObjects
-			.filter { generateRefereesFor.contains(it) }
-			.forEach {
-			output.apply {
-				write("type ")
-				write(it)
-				write("=import(\"./")
-				write(it)
-				write("\").")
-				write(it)
-				newLine()
-			}
-		}
+		output.close()
 	}
 
 	private fun generatePicklistTypes(sObject: SObject, output: BufferedWriter) {
@@ -88,7 +60,7 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 				write("string")
 				newLine()
 			}
-			if(field.relationshipName != null) {
+			if (field.relationshipName != null) {
 				output.apply {
 					write("\t")
 					write(field.relationshipName)
@@ -99,7 +71,7 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 		} else if (field.type == FieldType.reference) {
 			output.write("string")
 		} else if (field.type == FieldType.picklist || field.type == FieldType.multipicklist) {
-			output.write(getPicklistTypeName(sObject,field))
+			output.write(getPicklistTypeName(sObject, field))
 		} else {
 			output.write(field.type.getJsType())
 		}

@@ -12,15 +12,10 @@ repositories {
 	mavenCentral()
 }
 
-buildscript {
-	repositories {
-		mavenCentral()
-	}
-}
-
 dependencies {
 	testImplementation(kotlin("test"))
-	implementation(group="com.fasterxml.jackson.module", name="jackson-module-kotlin", version = "2.9.8")
+	implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.9.8")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 }
 
 tasks.test {
@@ -33,4 +28,13 @@ tasks.withType<KotlinCompile>() {
 
 application {
 	mainClassName = "MainKt"
+}
+tasks.jar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	manifest {
+		attributes["Main-Class"] = "MainKt"
+	}
+	configurations["compileClasspath"].forEach { file: File ->
+		from(zipTree(file.absoluteFile))
+	}
 }

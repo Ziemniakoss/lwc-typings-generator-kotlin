@@ -4,12 +4,23 @@ import pl.ziemniakoss.lwc_typings_generator.metadata_types.Field
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
 import java.io.BufferedWriter
 import java.nio.file.Paths
+import kotlin.io.path.Path
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 
 class SObjectSchemaGenerator : ISObjectSchemaGenerator {
-	override fun generateSchema(sObject: SObject, output: BufferedWriter) {
+	init {
+		createSchemasFolder()
+	}
+
+	private fun createSchemasFolder() {
+		val schemaFolder = Paths.get(".sfdx", "typings", "lwc", "schema")
+		schemaFolder.createDirectories()
+	}
+
+	override fun generateSchema(sObject: SObject) {
+		val output = Paths.get(".sfdx", "typings", "lwc", "schema", "${sObject.name}.d.ts").bufferedWriter()
 		generateSchemaForSObject(sObject, output)
 		sObject.fields.forEach { generateSchemaForField(sObject, it, output) }
 		output.close()
