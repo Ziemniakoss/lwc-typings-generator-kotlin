@@ -8,19 +8,28 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
 
-class SObjectDefinitionFetcher :ISObjectDefinitionFetcher{
-	override suspend fun fetchSObjectDefinition(sObjectName: String) : SObject {
-		val result = getSObjectDescribe(sObjectName)
-		if(result.status == 0) {
-			return result.result!!
-		}
-		throw SfdxOperationException("${result.name}: ${result.message}")
+class SObjectDefinitionFetcher : ISObjectDefinitionFetcher {
+	companion object {
+		const val NAME_NOT_FOUND = "NOT_FOUND"
 	}
 
-	override suspend fun fetchSObjectsDefinitions(sObjectNames: Set<String>): List<SObject> = coroutineScope{
+	override suspend fun fetchSObjectDefinition(sObjectName: String): SObject {
+		val result = getSObjectDescribe(sObjectName)
+		if (result.status == 0) {
+			return result.result!!
+		}
+		val message = if (result.name == NAME_NOT_FOUND) {
+			"Error: sobject ${sObjectName} does not exist"
+		} else {
+			"${result.name}: ${result.message}"
+		}
+		throw SfdxOperationException(message)
+	}
+
+	override suspend fun fetchSObjectsDefinitions(sObjectNames: Set<String>): List<SObject> = coroutineScope {
 		val jobs = sObjectNames.map { async { fetchSObjectDefinition(it) } }
 		val sObjects = mutableListOf<SObject>()
-		for(job in jobs) {
+		for (job in jobs) {
 			sObjects.add(job.await())
 		}
 		return@coroutineScope sObjects
@@ -39,11 +48,11 @@ class SObjectDefinitionFetcher :ISObjectDefinitionFetcher{
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	class SfdxOperationResult(
+	data class SfdxOperationResult(
 		val status: Int,
 		val result: SObject?,
 		val message: String?,
 		val stack: String?,
-		val name: String?
+		val name: String?,
 	)
 }
