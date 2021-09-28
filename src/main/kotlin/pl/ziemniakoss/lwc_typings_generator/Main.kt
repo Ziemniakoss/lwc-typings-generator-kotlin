@@ -24,10 +24,15 @@ class Main(
 			sObjectsMap[parsedSObject.name] = parsedSObject
 		}
 
-		sObjectsMap.values.forEach { sObjectInterfaceGenerator.generateInterface(it) }
-		sObjectsMap.values.forEach { sObjectSchemaGenerator.generateSchema(it) }
-		sObjectsMap.values.forEach{ println("HAS ${it.name}")}
+		val schemaGenerationJobs = sObjectsMap.values.map { async { sObjectSchemaGenerator.generateSchema(it, sObjectsMap) } }
+		val interfacesGenerationJobs = sObjectsMap.values.map{ async { sObjectInterfaceGenerator.generateInterface(it) }}
 
+		for(schemaGenerationJob in schemaGenerationJobs) {
+			schemaGenerationJob.await()
+		}
+		for(interfaceGenerationJob in interfacesGenerationJobs) {
+			interfaceGenerationJob.await()
+		}
 	}
 
 	private suspend fun fetchSObjectDefinitions(): List<SObject> = definitionsFetcher.fetchSObjectsDefinitions(args.toSet())

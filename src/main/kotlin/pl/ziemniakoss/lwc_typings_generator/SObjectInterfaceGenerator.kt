@@ -5,6 +5,8 @@ import pl.ziemniakoss.lwc_typings_generator.metadata_types.Field
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.FieldType
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
 import java.io.BufferedWriter
+import java.lang.Exception
+import java.nio.file.AccessDeniedException
 import java.nio.file.Paths
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.createDirectories
@@ -12,24 +14,38 @@ import kotlin.io.path.createDirectories
 class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 	init {
 		Paths.get(".sfdx", "typings", "lwc", "sobjects").createDirectories()
+		deleteExistingFilesInSObjectFolder()
+	}
+	private fun deleteExistingFilesInSObjectFolder() {
+		val allFiles = Paths.get(".sfdx", "typings", "lwc", "sobjects").toFile().listFiles()
+		for (file in allFiles) {
+			file.delete()
+		}
 	}
 
 	override fun generateInterface(sObject: SObject) {
-		val output = Paths.get(".sfdx", "typings", "lwc", "sobjects", "${sObject.name}.d.ts").bufferedWriter()
-		generatePicklistTypes(sObject, output)
-		output.apply {
-			write("declare interface ")
-			write(sObject.name)
-			write(" {")
-			newLine()
+		val outputPath = Paths.get(".sfdx", "typings", "lwc", "sobjects", "${sObject.name}.d.ts")
+		try {
+			val output =outputPath.bufferedWriter()
+			generatePicklistTypes(sObject, output)
+			output.apply {
+				write("declare interface ")
+				write(sObject.name)
+				write(" {")
+				newLine()
+			}
+			sObject.fields.forEach { generateTypingsForField(sObject, it, output) }
+			generateTypingsForChildRelationships(sObject.childRelationships, output)
+			output.apply {
+				write("}")
+				newLine()
+			}
+			output.close()
+		}catch (e: AccessDeniedException) {
+			println("Error occurred while generating interfaces for ${sObject.name}: Make sure that you have write access to ${outputPath.toUri()}")
+		} catch (e: Exception) {
+			println("Error occurred while generating interfaces for ${sObject.name}: ${e.message}")
 		}
-		sObject.fields.forEach { generateTypingsForField(sObject, it, output) }
-		generateTypingsForChildRelationships(sObject.childRelationships, output)
-		output.apply {
-			write("}")
-			newLine()
-		}
-		output.close()
 	}
 
 	private fun generatePicklistTypes(sObject: SObject, output: BufferedWriter) {

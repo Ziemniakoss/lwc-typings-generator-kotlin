@@ -12,20 +12,33 @@ import kotlin.io.path.createFile
 class SObjectSchemaGenerator : ISObjectSchemaGenerator {
 	init {
 		createSchemasFolder()
+		deleteAllFilesInSchemaFolder()
 	}
 
+	private fun deleteAllFilesInSchemaFolder() {
+		val allFiles = Paths.get(".sfdx", "typings", "lwc", "schema").toFile().listFiles()
+		for(file in allFiles) {
+			file.delete()
+		}
+	}
 	private fun createSchemasFolder() {
 		val schemaFolder = Paths.get(".sfdx", "typings", "lwc", "schema")
 		schemaFolder.createDirectories()
 	}
 
-	override fun generateSchema(sObject: SObject) {
+	override fun generateSchema(sObject: SObject, allSObjectsMap: Map<String, SObject>) {
 		val output = Paths.get(".sfdx", "typings", "lwc", "schema", "${sObject.name}.d.ts").bufferedWriter()
+		output.apply {
+			write("""type FieldId = import("@salesforce/schema").FieldId""")
+			newLine()
+
+			write("""type ObjectId=import("@salesforce/schema").ObjectId""");
+			newLine()
+		}
 		generateSchemaForSObject(sObject, output)
 		sObject.fields.forEach { generateSchemaForField(sObject, it, output) }
 		output.close()
 	}
-
 
 	private fun generateSchemaForField(sObject: SObject, field: Field, output: BufferedWriter) {
 		output.apply {
@@ -38,7 +51,7 @@ class SObjectSchemaGenerator : ISObjectSchemaGenerator {
 
 			write("\tconst ")
 			write(field.name)
-			write(":Field")
+			write(":FieldId")
 			newLine()
 
 			write("\texport default ")
@@ -59,7 +72,7 @@ class SObjectSchemaGenerator : ISObjectSchemaGenerator {
 
 			write("\tconst ")
 			write(sObject.name)
-			write(":SObject")
+			write(":ObjectId")
 			newLine()
 
 			write("\texport default ")

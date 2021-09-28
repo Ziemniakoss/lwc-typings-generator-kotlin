@@ -42,5 +42,3 @@ class Component{
 # TODO
 
 - deeper nesting of schema (max 5, current 1)
-- parallel download
-- 
