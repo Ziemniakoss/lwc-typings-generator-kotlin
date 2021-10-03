@@ -36,7 +36,7 @@ class SObjectDefinitionsCache : ISObjectDefinitionsCache {
 
 	override suspend fun fetchAllExcluding(excludedSObjectNames: Set<String>): List<SObject> = coroutineScope {
 		val excludedCachedFiles = excludedSObjectNames.map { "$it.json" }
-		val pathsToParse = Paths.get(System.getProperty("user.home"), ".cache", "lwc-typings-generator").toFile()
+		val pathsToParse = Paths.get(System.getProperty("user.home"), ".cache", "lwc-typings-generator", getDefaultSfdxUserName()).toFile()
 			.walk()
 			.drop(1)
 			.filter { !excludedCachedFiles.contains(it.name) }
@@ -54,10 +54,16 @@ class SObjectDefinitionsCache : ISObjectDefinitionsCache {
 		return jsonMapper.readValue(path.toFile())
 	}
 
-	private fun getPathForSObjectName(sObjectName: String): Path = Paths.get(System.getProperty("user.home"), ".cache", "lwc-typings-generator", "$sObjectName.json")
+	private fun getPathForSObjectName(sObjectName: String): Path {
+		return Paths.get(System.getProperty("user.home"), ".cache", "lwc-typings-generator", getDefaultSfdxUserName(), "$sObjectName.json")
+	}
 
+	private fun getDefaultSfdxUserName():String {
+		val sfdxConfg: SfdxConfig = jsonMapper.readValue(Paths.get(".sfdx", "sfdx-config.json").toFile())
+		return sfdxConfg.defaultusername
+	}
 	private fun createCacheFolder() {
-		val cacheFolder = Paths.get(System.getProperty("user.home"), ".cache", "lwc-typings-generator")
+		val cacheFolder = Paths.get(System.getProperty("user.home"), ".cache", "lwc-typings-generator", getDefaultSfdxUserName())
 		cacheFolder.createDirectories()
 	}
 }

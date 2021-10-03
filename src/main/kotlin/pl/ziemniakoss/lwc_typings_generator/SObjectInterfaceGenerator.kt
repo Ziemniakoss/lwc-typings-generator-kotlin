@@ -5,7 +5,6 @@ import pl.ziemniakoss.lwc_typings_generator.metadata_types.Field
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.FieldType
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
 import java.io.BufferedWriter
-import java.lang.Exception
 import java.nio.file.AccessDeniedException
 import java.nio.file.Paths
 import kotlin.io.path.bufferedWriter
@@ -16,6 +15,7 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 		Paths.get(".sfdx", "typings", "lwc", "sobjects").createDirectories()
 		deleteExistingFilesInSObjectFolder()
 	}
+
 	private fun deleteExistingFilesInSObjectFolder() {
 		val allFiles = Paths.get(".sfdx", "typings", "lwc", "sobjects").toFile().listFiles()
 		for (file in allFiles) {
@@ -26,11 +26,15 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 	override fun generateInterface(sObject: SObject) {
 		val outputPath = Paths.get(".sfdx", "typings", "lwc", "sobjects", "${sObject.name}.d.ts")
 		try {
-			val output =outputPath.bufferedWriter()
+			val output = outputPath.bufferedWriter()
+			generateRecordTypeTypes(sObject, output)
 			generatePicklistTypes(sObject, output)
 			output.apply {
 				write("declare interface ")
 				write(sObject.name)
+				if(sObject.name == "RecordType") {
+					write("<T>")
+				}
 				write(" {")
 				newLine()
 			}
@@ -41,10 +45,26 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 				newLine()
 			}
 			output.close()
-		}catch (e: AccessDeniedException) {
+		} catch (e: AccessDeniedException) {
 			println("Error occurred while generating interfaces for ${sObject.name}: Make sure that you have write access to ${outputPath.toUri()}")
 		} catch (e: Exception) {
 			println("Error occurred while generating interfaces for ${sObject.name}: ${e.message}")
+		}
+	}
+
+	private fun generateRecordTypeTypes(sObject: SObject, output: BufferedWriter) {
+		val nonMasterRecordTypesDevNames = sObject.recordTypeInfos.filter { !it.master }
+			.map { "\"${it.developerName}\"" }
+			.sorted()
+		if (nonMasterRecordTypesDevNames.isEmpty()) {
+			return
+		}
+		output.apply {
+			write("type ")
+			write(sObject.name)
+			write("__RecordType__DevName=")
+			write(nonMasterRecordTypesDevNames.joinToString("|"))
+			newLine()
 		}
 	}
 
@@ -71,7 +91,12 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 			write(field.name)
 			write(":")
 		}
-		if (field.type == FieldType.reference) {
+		if (sObject.name == "RecordType" && field.name == "DeveloperName") {
+			output.apply {
+				write("T")
+				newLine()
+			}
+		} else if (field.type == FieldType.reference) {
 			output.apply {
 				write("string")
 				newLine()
@@ -81,7 +106,15 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 					write("\t")
 					write(field.relationshipName)
 					write(":")
-					output.write(field.referenceTo?.joinToString("|") ?: "any")
+					val joinedReferenceTo = field.referenceTo
+						?.map {
+							if (it == "RecordType") {
+								return@map "RecordType<${sObject.name}__RecordType__DevName"
+							}
+							return@map it;
+						}
+						?.joinToString("|") ?: "any"
+					output.write(joinedReferenceTo)
 				}
 			}
 		} else if (field.type == FieldType.reference) {
@@ -92,7 +125,6 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 			output.write(field.type.getJsType())
 		}
 		output.newLine()
-
 	}
 
 	private fun generateTypingsForChildRelationships(childRelationships: List<ChildRelationship>, output: BufferedWriter) {
