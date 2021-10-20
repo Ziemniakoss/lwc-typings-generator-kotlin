@@ -1,4 +1,4 @@
-package pl.ziemniakoss.lwc_typings_generator.metadata_types
+package pl.ziemniakoss.lwc_typings_generator.metadataTypes
 
 enum class FieldType {
 	string,

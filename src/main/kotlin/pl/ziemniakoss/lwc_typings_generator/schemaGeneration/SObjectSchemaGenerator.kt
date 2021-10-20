@@ -1,13 +1,11 @@
-package pl.ziemniakoss.lwc_typings_generator
+package pl.ziemniakoss.lwc_typings_generator.schemaGeneration
 
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.Field
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.Field
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.SObject
 import java.io.BufferedWriter
 import java.nio.file.Paths
-import kotlin.io.path.Path
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.createDirectories
-import kotlin.io.path.createFile
 
 class SObjectSchemaGenerator : ISObjectSchemaGenerator {
 	init {
@@ -17,7 +15,7 @@ class SObjectSchemaGenerator : ISObjectSchemaGenerator {
 
 	private fun deleteAllFilesInSchemaFolder() {
 		val allFiles = Paths.get(".sfdx", "typings", "lwc", "schema").toFile().listFiles()
-		for(file in allFiles) {
+		for(file in allFiles!!) {
 			file.delete()
 		}
 	}
@@ -32,7 +30,7 @@ class SObjectSchemaGenerator : ISObjectSchemaGenerator {
 			write("""type FieldId = import("@salesforce/schema").FieldId""")
 			newLine()
 
-			write("""type ObjectId=import("@salesforce/schema").ObjectId""");
+			write("""type ObjectId=import("@salesforce/schema").ObjectId""")
 			newLine()
 		}
 		generateSchemaForSObject(sObject, output)

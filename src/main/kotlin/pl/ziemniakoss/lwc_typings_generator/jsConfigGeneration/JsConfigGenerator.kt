@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.forEach
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -41,11 +44,11 @@ class JsConfigGenerator : IJsConfigGenerator {
 	}
 
 	private fun removeExistingLwcComponentsPaths(pathsNode: ObjectNode) {
-		for(fieldName in pathsNode.fieldNames()) {
-			if(fieldName.startsWith("c/")){
-				pathsNode.remove(fieldName)
-			}
-		}
+		pathsNode.fieldNames()
+			.asSequence()
+			.toList()
+			.filter { it.startsWith("c/") }
+			.forEach { pathsNode.remove(it) }
 	}
 
 	private fun getLwcComponentNames():List<String> {

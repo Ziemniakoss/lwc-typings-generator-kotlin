@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.SObject
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*

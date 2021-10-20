@@ -1,6 +1,6 @@
 package pl.ziemniakoss.lwc_typings_generator
 
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.SObject
 import java.util.*
 
 interface ISObjectDefinitionsCache {

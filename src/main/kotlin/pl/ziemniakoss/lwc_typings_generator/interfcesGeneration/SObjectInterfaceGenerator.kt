@@ -1,9 +1,9 @@
-package pl.ziemniakoss.lwc_typings_generator
+package pl.ziemniakoss.lwc_typings_generator.interfcesGeneration
 
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.ChildRelationship
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.Field
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.FieldType
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.ChildRelationship
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.Field
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.FieldType
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.SObject
 import java.io.BufferedWriter
 import java.nio.file.AccessDeniedException
 import java.nio.file.Paths
@@ -18,7 +18,7 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 
 	private fun deleteExistingFilesInSObjectFolder() {
 		val allFiles = Paths.get(".sfdx", "typings", "lwc", "sobjects").toFile().listFiles()
-		for (file in allFiles) {
+		for (file in allFiles!!) {
 			file.delete()
 		}
 	}
@@ -111,7 +111,7 @@ class SObjectInterfaceGenerator : ISObjectInterfaceGenerator {
 							if (it == "RecordType") {
 								return@map "RecordType<${sObject.name}__RecordType__DevName"
 							}
-							return@map it;
+							return@map it
 						}
 						?.joinToString("|") ?: "any"
 					output.write(joinedReferenceTo)

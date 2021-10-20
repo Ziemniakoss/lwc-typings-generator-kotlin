@@ -2,9 +2,11 @@ package pl.ziemniakoss.lwc_typings_generator
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import pl.ziemniakoss.lwc_typings_generator.interfcesGeneration.ISObjectInterfaceGenerator
 import pl.ziemniakoss.lwc_typings_generator.jsConfigGeneration.IJsConfigGenerator
 import pl.ziemniakoss.lwc_typings_generator.jsConfigGeneration.JsConfigGenerator
-import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
+import pl.ziemniakoss.lwc_typings_generator.metadataTypes.SObject
+import pl.ziemniakoss.lwc_typings_generator.schemaGeneration.ISObjectSchemaGenerator
 
 class Main(
 	private val args: Array<String>,
