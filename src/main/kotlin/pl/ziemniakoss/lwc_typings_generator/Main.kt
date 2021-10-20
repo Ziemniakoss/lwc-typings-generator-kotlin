@@ -2,6 +2,8 @@ package pl.ziemniakoss.lwc_typings_generator
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import pl.ziemniakoss.lwc_typings_generator.jsConfigGeneration.IJsConfigGenerator
+import pl.ziemniakoss.lwc_typings_generator.jsConfigGeneration.JsConfigGenerator
 import pl.ziemniakoss.lwc_typings_generator.metadata_types.SObject
 
 class Main(
@@ -10,6 +12,7 @@ class Main(
 	private val definitionsCache: ISObjectDefinitionsCache,
 	private val sObjectInterfaceGenerator: ISObjectInterfaceGenerator,
 	private val sObjectSchemaGenerator: ISObjectSchemaGenerator,
+	private val jsConfigGenerator: IJsConfigGenerator = JsConfigGenerator()
 ) {
 	fun run() = runBlocking {
 		val fetchingFromRemoteJob = async { fetchSObjectDefinitions() }
@@ -33,6 +36,7 @@ class Main(
 		for(interfaceGenerationJob in interfacesGenerationJobs) {
 			interfaceGenerationJob.await()
 		}
+		jsConfigGenerator.generateJsconfig()
 	}
 
 	private suspend fun fetchSObjectDefinitions(): List<SObject> = definitionsFetcher.fetchSObjectsDefinitions(args.toSet())
