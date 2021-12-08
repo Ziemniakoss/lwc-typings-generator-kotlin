@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
 	testImplementation(kotlin("test"))
+	implementation("org.jetbrains.kotlinx:kotlinx-cli:0.3.3")
 	implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.9.8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 }
