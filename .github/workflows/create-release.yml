@@ -1,0 +1,21 @@
+name: Test add file to release
+on:
+  release:
+    types: [ published ]
+jobs:
+  build:
+    name: Attach jars to release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build jar
+        run: ./gradlew jar
+      - name: Upload files to a GitHub release
+        uses: svenstaro/upload-release-action@2.2.1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./build/libs/lwc-typings-generator-1.0.jar
+          asset_name: lwc-typings-generator.jar
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "This is my release text"
