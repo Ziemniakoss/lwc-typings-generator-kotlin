@@ -1,3 +1,4 @@
+
 # LWC Typings generator
 
 Program to generate:
@@ -10,6 +11,10 @@ SObject interfaces are used only to help developer to work with SObjects on fron
 - SObject interfaces: interface representing SObject in database with same name as sObject.
 - Record type's dev names types: typescript string types accepting only correct developer names. Types have names generated with template `${sobjectName}__RecordType__DevName`
 - picklist types: typescript string types accepting only correct picklist values. Types have name generated with template: `${sObjectName}__${picklistName}`
+
+**Warning**
+
+This project is no longer maintaned as I made superior way for typings generation, [SFDX plugin lwc-typings-generator](https://github.com/Ziemniakoss/lwc-typings-generator)
 
 # Usage
 
